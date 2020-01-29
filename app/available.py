@@ -17,15 +17,15 @@ class Available(Resource):
     def get(self):
         # Track actions through different webservices.
         uuidcode = request.headers.get('uuidcode', '<no uuidcode>')
-        app.log.info("{} - Get Available status of node".format(uuidcode))
-        app.log.trace("{} - Headers: {}".format(uuidcode, request.headers))
+        app.log.info("uuidcode={} - Get Available status of node".format(uuidcode))
+        app.log.trace("uuidcode={} - Headers: {}".format(uuidcode, request.headers))
         
         validate_auth(app.log,
                       uuidcode,
                       request.headers.get('Intern-Authorization'))
         
         if not 'node' in request.args:
-            app.log.warning("{} - Invalid Parameters: {}".format(uuidcode, request.args))
+            app.log.warning("uuidcode={} - Invalid Parameters: {}".format(uuidcode, request.args))
             return "{} - Invalid Parameters: {}. Please use only this parameter: node".format(uuidcode, request.args), 422
         
         try:
@@ -36,6 +36,6 @@ class Available(Resource):
             else:
                 return 'False', 200
         except:
-            app.log.warning("{} - Availability check failed. Traceback: {}".format(uuidcode, traceback.format_exc()))
+            app.log.warning("uuidcode={} - Availability check failed. Traceback: {}".format(uuidcode, traceback.format_exc()))
             return 'False', 200
         return '', 404

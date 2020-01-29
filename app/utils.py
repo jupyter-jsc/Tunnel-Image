@@ -31,50 +31,50 @@ def validate_auth(app_logger, uuidcode, intern_authorization):
     if not intern_authorization == None:
         token = get_j4j_tunnel_token()
         if intern_authorization == token:
-            app_logger.info("{} - Intern-Authorization validated".format(uuidcode))
+            app_logger.info("uuidcode={} - Intern-Authorization validated".format(uuidcode))
             return
-    app_logger.warning("{} - Could not validate Token:\n{}".format(uuidcode, intern_authorization))
+    app_logger.warning("uuidcode={} - Could not validate Token:\n{}".format(uuidcode, intern_authorization))
     abort(401)
 
 
 def check_connect(app_logger, uuidcode, pre, node):
     cmd_check = ['ssh', '-O', 'check', '{}_{}'.format(pre, node)]
-    app_logger.trace("{} - Try to check the connection with the command: {}".format(uuidcode, cmd_check))
+    app_logger.trace("uuidcode={} - Try to check the connection with the command: {}".format(uuidcode, cmd_check))
     code_check = subprocess.call(cmd_check, stderr=subprocess.PIPE, stdout=subprocess.PIPE, timeout=3)
-    app_logger.trace("{} - After subprocess call. ReturnCode: {}".format(uuidcode, code_check))
+    app_logger.trace("uuidcode={} - After subprocess call. ReturnCode: {}".format(uuidcode, code_check))
     if code_check == 255:
         cmd_connect = ['ssh', '{}_{}'.format(pre, node)]
-        app_logger.trace("{} - ReturnCode was 255, try to start connection with cmd: {}".format(uuidcode, cmd_connect))
+        app_logger.trace("uuidcode={} - ReturnCode was 255, try to start connection with cmd: {}".format(uuidcode, cmd_connect))
         code_connect = subprocess.call(cmd_connect, stderr=subprocess.PIPE, stdout=subprocess.PIPE, timeout=3)
-        app_logger.trace("{} - After subprocess call. ReturnCode: {}".format(uuidcode, code_connect))
-        app_logger.trace("{} - Check connection again".format(uuidcode))
+        app_logger.trace("uuidcode={} - After subprocess call. ReturnCode: {}".format(uuidcode, code_connect))
+        app_logger.trace("uuidcode={} - Check connection again".format(uuidcode))
         code_check = subprocess.call(cmd_check, stderr=subprocess.PIPE, stdout=subprocess.PIPE, timeout=3)
-        app_logger.trace("{} - After subprocess call. ReturnCode: {}".format(uuidcode, code_check))
+        app_logger.trace("uuidcode={} - After subprocess call. ReturnCode: {}".format(uuidcode, code_check))
     return code_check
 
 def is_tunnel_active(app_logger, uuidcode, port):
-    app_logger.trace("{} - Try to check for active tunnel with port: {}".format(uuidcode, port))
+    app_logger.trace("uuidcode={} - Try to check for active tunnel with port: {}".format(uuidcode, port))
     cmd1 = ['netstat', '-ltn']
     cmd2 = ['grep', '0.0.0.0:{}'.format(port)]
     p1 = subprocess.Popen(cmd1, stdout=subprocess.PIPE)
     p2 = subprocess.Popen(cmd2, stdin=p1.stdout, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    app_logger.trace("{} - Popen called with {} | {}".format(uuidcode, cmd1, cmd2))
+    app_logger.trace("uuidcode={} - Popen called with {} | {}".format(uuidcode, cmd1, cmd2))
     p1.stdout.close()
-    app_logger.trace("{} - Popen closed".format(uuidcode))
+    app_logger.trace("uuidcode={} - Popen closed".format(uuidcode))
     out, err = p2.communicate()
-    app_logger.trace("{} - Popen communicated. Out:{} Err:{}".format(uuidcode, out, err))
+    app_logger.trace("uuidcode={} - Popen communicated. Out:{} Err:{}".format(uuidcode, out, err))
     pid_s = out.decode('utf-8').split()
-    app_logger.trace("{} - Return: {}".format(uuidcode, len(pid_s) != 0))
+    app_logger.trace("uuidcode={} - Return: {}".format(uuidcode, len(pid_s) != 0))
     return len(pid_s) != 0
 
 
 def build_tunnel(app_logger, uuidcode, system, hostname, port, node=''):
-    app_logger.trace('{} - Try to build tunnel. Arguments: {} {} {} {}'.format(uuidcode, system, hostname, port, node))
+    app_logger.trace('uuidcode={} - Try to build tunnel. Arguments: {} {} {} {}'.format(uuidcode, system, hostname, port, node))
     if node == '':
         nodes = utils_file_loads.get_nodes()
-        app_logger.trace('{} - FileLoads: Nodes: {}'.format(uuidcode, nodes))
+        app_logger.trace('uuidcode={} - FileLoads: Nodes: {}'.format(uuidcode, nodes))
         nodelist = nodes.get(system.upper())
-        app_logger.trace('{} - Nodelist: {}'.format(uuidcode, nodelist))
+        app_logger.trace('uuidcode={} - Nodelist: {}'.format(uuidcode, nodelist))
         while len(nodelist) > 0:
             i = randint(0, len(nodelist)-1)
             if available(app_logger,
@@ -86,30 +86,30 @@ def build_tunnel(app_logger, uuidcode, system, hostname, port, node=''):
                 del nodelist[i]
         if len(nodelist) == 0:
             raise Exception("{} - Nodelist empty".format(uuidcode))
-        app_logger.trace('{} - Use Node: {}'.format(uuidcode, node))
+        app_logger.trace('uuidcode={} - Use Node: {}'.format(uuidcode, node))
         
     if check_connect(app_logger, uuidcode, 'tunnel', node) == 255:
         raise Exception("{} - Could not connect to node".format(uuidcode))
     
     cmd_forward = ['ssh', '-O', 'forward', 'tunnel_{}'.format(node), '-L', '0.0.0.0:{port}:{hostname}:{port}'.format(port=port, hostname=hostname)]
-    app_logger.trace("{} - Build tunnel with Popen command: {}".format(uuidcode, cmd_forward))
+    app_logger.trace("uuidcode={} - Build tunnel with Popen command: {}".format(uuidcode, cmd_forward))
     p_forward = subprocess.Popen(cmd_forward, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
-    app_logger.trace("{} - After Popen. Call communicate".format(uuidcode))
+    app_logger.trace("uuidcode={} - After Popen. Call communicate".format(uuidcode))
     out, err = p_forward.communicate()
-    app_logger.trace("{} - Communicated. Out:{} Err:{}".format(uuidcode, out, err))
+    app_logger.trace("uuidcode={} - Communicated. Out:{} Err:{}".format(uuidcode, out, err))
     code_forward = p_forward.returncode
-    app_logger.trace("{} - ReturnCode of Popen: {}".format(uuidcode, code_forward))
+    app_logger.trace("uuidcode={} - ReturnCode of Popen: {}".format(uuidcode, code_forward))
     return node
 
 def kill_tunnel(app_logger, uuidcode, node, hostname, port):
     if isinstance(node, tuple):
         node = node[0]
     cmd_cancel = ['ssh', '-O', 'cancel', 'tunnel_{}'.format(node), '-L', '0.0.0.0:{port}:{hostname}:{port}'.format(port=port, hostname=hostname)]
-    app_logger.trace("{} - Try to kill tunnel with cmd: {}".format(uuidcode, cmd_cancel))
+    app_logger.trace("uuidcode={} - Try to kill tunnel with cmd: {}".format(uuidcode, cmd_cancel))
     p_cancel = subprocess.Popen(cmd_cancel, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
-    app_logger.trace("{} - After Popen".format(uuidcode))
+    app_logger.trace("uuidcode={} - After Popen".format(uuidcode))
     out, err = p_cancel.communicate()
-    app_logger.trace("{} - Communicated. Out:{} Err:{}".format(uuidcode, out, err))
+    app_logger.trace("uuidcode={} - Communicated. Out:{} Err:{}".format(uuidcode, out, err))
     code_cancel = p_cancel.returncode
-    app_logger.trace("{} - ReturnCode: {}".format(uuidcode, code_cancel))
+    app_logger.trace("uuidcode={} - ReturnCode: {}".format(uuidcode, code_cancel))
     return code_cancel == 0
