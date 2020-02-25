@@ -111,9 +111,9 @@ while True:
 def startup(app):
     with app.app_context():
         # close all remote tunnel
-        nodes = utils_file_loads.get_nodes()
-        for nodelist in nodes.values():
-            for node in nodelist:
+        unicore = utils_file_loads.get_unicore()
+        for infos in unicore.values():
+            for node in infos.get('nodes', []):
                 try:
                     remote_utils.remote(app.log,
                                         '<StartUp Call>',
