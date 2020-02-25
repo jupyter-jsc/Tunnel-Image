@@ -71,9 +71,8 @@ def is_tunnel_active(app_logger, uuidcode, port):
 def build_tunnel(app_logger, uuidcode, system, hostname, port, node=''):
     app_logger.trace('uuidcode={} - Try to build tunnel. Arguments: {} {} {} {}'.format(uuidcode, system, hostname, port, node))
     if node == '':
-        nodes = utils_file_loads.get_nodes()
-        app_logger.trace('uuidcode={} - FileLoads: Nodes: {}'.format(uuidcode, nodes))
-        nodelist = nodes.get(system.upper())
+        unicore = utils_file_loads.get_unicore()
+        nodelist = unicore.get(system.upper(), {}).get('nodes', [])
         app_logger.trace('uuidcode={} - Nodelist: {}'.format(uuidcode, nodelist))
         while len(nodelist) > 0:
             i = randint(0, len(nodelist)-1)
